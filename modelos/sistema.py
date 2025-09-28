@@ -1,12 +1,9 @@
-# modelos/sistema.py
-from ..estructuras.lista_simple import ListaSimple
-from ..estructuras.cola import Cola
+from estructuras.lista_simple import ListaSimple
 
 class SistemaRiego:
     def __init__(self):
         self.lista_drones = ListaSimple()
         self.lista_invernaderos = ListaSimple()
-        self.dron_actual = None
 
     def agregar_dron(self, dron):
         self.lista_drones.insertar(dron)
@@ -23,7 +20,8 @@ class SistemaRiego:
     def buscar_invernadero_por_nombre(self, nombre):
         return self.lista_invernaderos.buscar(lambda i: i.nombre == nombre)
 
-    def graficar_td_as(self):
-        # Graficar lista de drones
-        self.lista_drones.graficar()  # Debo agregar método graficar a ListaSimple
-        # Graficar otros TDAs aquí...
+    def limpiar_configuracion(self):
+        """Elimina toda la configuración actual (como pide el enunciado al cargar nuevo XML)"""
+        self.lista_drones = ListaSimple()
+        self.lista_invernaderos = ListaSimple()
+

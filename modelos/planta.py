@@ -8,3 +8,4 @@ class Planta:
 
     def __str__(self):
         return f"Planta(H{self.hilera}-P{self.posicion}, {self.tipo})"
+from .plan_riego import PlanRiego

@@ -1,4 +1,5 @@
 from .nodo import Nodo
+import os
 
 class ListaSimple:
     def __init__(self):
@@ -19,14 +20,6 @@ class ListaSimple:
             actual.siguiente = nuevo
         self.tamanio += 1
 
-    def buscar_por_indice(self, indice):
-        if indice < 0 or indice >= self.tamanio:
-            return None
-        actual = self.primero
-        for i in range(indice):
-            actual = actual.siguiente
-        return actual.valor
-
     def buscar(self, condicion):
         actual = self.primero
         while actual is not None:
@@ -35,32 +28,38 @@ class ListaSimple:
             actual = actual.siguiente
         return None
 
-    def imprimir(self):
+    def buscar_todos(self, condicion):
+        resultados = ListaSimple()
         actual = self.primero
         while actual is not None:
-            print(actual.valor)
+            if condicion(actual.valor):
+                resultados.insertar(actual.valor)
             actual = actual.siguiente
+        return resultados
+
+    def obtener_en(self, indice):
+        if indice < 0 or indice >= self.tamanio:
+            return None
+        actual = self.primero
+        for _ in range(indice):
+            actual = actual.siguiente
+        return actual.valor
 
     def graficar(self, nombre_archivo="lista_simple"):
         codigo_dot = '''digraph G {
     rankdir=LR;
     node [shape=record, height=0.1];
-    '''
+'''
         actual = self.primero
         contador = 1
-
-        # generamos lo nodos
         while actual is not None:
             etiqueta = str(actual.valor).replace('"', '\\"')
             codigo_dot += f'    nodo{contador} [label="{{<f0> {etiqueta} | <f1> }}"];\n'
             contador += 1
             actual = actual.siguiente
 
-        # reseteamos para los enlaces
         actual = self.primero
         contador = 1
-
-        # generamos los enlaces
         while actual is not None and actual.siguiente is not None:
             codigo_dot += f'    nodo{contador}:f1 -> nodo{contador + 1}:f0;\n'
             contador += 1
@@ -68,16 +67,24 @@ class ListaSimple:
 
         codigo_dot += '}'
 
-        import os
-        ruta_dot = f"reportes/dot/{nombre_archivo}.dot"
         os.makedirs("reportes/dot", exist_ok=True)
-        with open(ruta_dot, "w", encoding="utf-8") as archivo:
-            archivo.write(codigo_dot)
+        ruta_dot = f"reportes/dot/{nombre_archivo}.dot"
+        with open(ruta_dot, "w", encoding="utf-8") as f:
+            f.write(codigo_dot)
 
-        ruta_svg = f"reportes/html/{nombre_archivo}.svg"
         os.makedirs("reportes/html", exist_ok=True)
-        comando = f'dot -Tsvg "{ruta_dot}" -o "{ruta_svg}"'
-        os.system(comando)
-
-        print(f"Gráfico generado: {ruta_svg}")
+        ruta_svg = f"reportes/html/{nombre_archivo}.svg"
+        os.system(f'dot -Tsvg "{ruta_dot}" -o "{ruta_svg}"')
         return ruta_svg
+    
+    def iter_nodos(self):
+        actual = self.primero
+        while actual is not None:
+            yield actual
+            actual = actual.siguiente
+
+    def __iter__(self):
+        actual = self.primero
+        while actual is not None:
+            yield actual.valor
+            actual = actual.siguiente

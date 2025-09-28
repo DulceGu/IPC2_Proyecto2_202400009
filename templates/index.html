@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>GuateRiegos 2.0</title>
+</head>
+<body>
+    <h1>Bienvenido a GuateRiegos 2.0</h1>
+    <a href="{{ url_for('cargar') }}">Cargar Configuración</a> |
+    <a href="{{ url_for('simular') }}">Simular Riego</a> |
+    <a href="{{ url_for('ayuda') }}">Ayuda</a>
+
+    <h2>Invernaderos cargados</h2>
+    {% for inv in invernaderos %}
+        <div class="card">
+            <h3>{{ inv.nombre }}</h3>
+            <p>Hileras: {{ inv.total_hileras }}</p>
+            <ul>
+                {% for plan in inv.planes %}
+                    <li>{{ plan.nombre }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endfor %}
+</body>
+</html>

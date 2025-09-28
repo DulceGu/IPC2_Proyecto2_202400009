@@ -30,9 +30,7 @@ class Cola:
         return valor
 
     def ver_frente(self): # ver el valor del frente sin eliminar
-        if self.frente:
-            return self.frente.valor
-        return None
+        return self.frente.valor if self.frente else None
 
     def __len__(self):
         return self.tamanio

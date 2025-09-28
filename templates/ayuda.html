@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta charset="UTF-8">
+    <title>Ayuda - GuateRiegos 2.0</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Acerca de GuateRiegos 2.0</h1>
+        <p>Este sistema simula el riego automatizado en invernaderos usando drones regadores.</p>
+
+        <h2>Funcionalidades</h2>
+        <ul>
+            <li><strong>Cargar configuración:</strong> Sube un archivo XML con drones, invernaderos y planes de riego.</li>
+            <li><strong>Simular riego:</strong> Ejecuta un plan y genera un reporte HTML con instrucciones por segundo.</li>
+            <li><strong>Generar salida XML:</strong> Al finalizar todas las simulaciones, se puede generar el archivo <code>salida.xml</code>.</li>
+            <li><strong>Graficar TDAs:</strong> (Implementación futura) Visualiza el estado interno de las estructuras en un tiempo <em>t</em>.</li>
+        </ul>
+
+        <h2>Restricciones del sistema</h2>
+        <ul>
+            <li>Solo un dron puede regar a la vez.</li>
+            <li>Los movimientos y riegos toman 1 segundo cada uno.</li>
+            <li>Los planes se ejecutan en orden estricto.</li>
+        </ul>
+
+        <h2>Desarrollado por</h2>
+        <p>Estudiante de IPC2 – Universidad San Carlos de Guatemala</p>
+
+        <br>
+        <a href="{{ url_for('index') }}">← Volver al inicio</a>
+    </div>
+</body>
+</html>
