@@ -1,5 +1,7 @@
+# controladores/simulador.py
 from estructuras.cola import Cola
 from estructuras.lista_simple import ListaSimple
+from modelos.instruccion_tiempo import InstruccionTiempo
 
 class Simulador:
     def __init__(self, sistema):
@@ -13,17 +15,17 @@ class Simulador:
         if not plan:
             return False
 
-        # Reiniciar estado de drones
+        # reiniciar estado de drones
         actual_dron = invernadero.drones_asignados.primero
         while actual_dron is not None:
             dron = actual_dron.valor
-            dron.posicion_actual = 0
+            dron.posicion_actual = 0  # empiezan en posición 0 (antes de la primera planta)
             dron.total_agua = 0
             dron.total_fertilizante = 0
             dron.instrucciones = ListaSimple()
             actual_dron = actual_dron.siguiente
 
-        # Crear cola de operaciones pendientes (copia de plan.orden_riego)
+        # crear cola de operaciones pendientes
         cola_riegos = Cola()
         actual_paso = plan.orden_riego.primero
         while actual_paso is not None:
@@ -31,88 +33,97 @@ class Simulador:
             actual_paso = actual_paso.siguiente
 
         tiempo = 0
-        instrucciones_globales = []
+        instrucciones_globales = ListaSimple()
 
-        # Simulación por segundos hasta vaciar la cola
+        # mmientras haya riegos pendientes
         while not cola_riegos.esta_vacia():
             tiempo += 1
-            instrucciones_tiempo = {}
+            instrucciones_tiempo = ListaSimple()
 
-            # Obtener el riego que sigue (sin desencolar aún)
+            # obtener el proximo riego sin desencolar todavía
             siguiente_riego = cola_riegos.ver_frente()
             if siguiente_riego is None:
                 break
 
             hilera_objetivo, posicion_objetivo = siguiente_riego
 
-            # Encontrar dron asignado a la hilera objetivo
-            dron_objetivo = invernadero.obtener_dron_por_hilera(hilera_objetivo)
+            # encontrar dron asignado a la hilera objetivo
+            dron_objetivo = None
+            actual_dron = invernadero.drones_asignados.primero
+            while actual_dron is not None:
+                dron = actual_dron.valor
+                if dron.hilera_asignada == hilera_objetivo:
+                    dron_objetivo = dron
+                    break
+                actual_dron = actual_dron.siguiente
+
             if not dron_objetivo:
-                # Si no hay dron para esa hilera, descartamos ese paso
+                # si no hay dron para esa hilera descartamos este paso
                 cola_riegos.desencolar()
                 continue
 
-            # Para facilitar decisiones, volcar cola a lista (sin perderla)
-            temp_cola = Cola()
-            items = []
-            while not cola_riegos.esta_vacia():
-                item = cola_riegos.desencolar()
-                items.append(item)
-                temp_cola.encolar(item)
-            # restaurar cola
-            cola_riegos = temp_cola
-
-            # Mover / accionar cada dron
+            # procesar cada dron
             actual_dron = invernadero.drones_asignados.primero
+            riego_realizado = False
+            
             while actual_dron is not None:
                 dron = actual_dron.valor
                 accion = "Esperar"
 
-                # Si es el dron encargado del riego actual y está en la posición -> regar
-                if dron == dron_objetivo and dron.posicion_actual == posicion_objetivo:
-                    planta = invernadero.obtener_planta(hilera_objetivo, posicion_objetivo)
-                    if planta:
-                        dron.total_agua += planta.litros_agua
-                        dron.total_fertilizante += planta.gramos_fertilizante
-                        accion = "Regar"
-                        # quitar ese riego de la cola (ya atendido)
-                        cola_riegos.desencolar()
-                else:
-                    # buscar primer pendiente en su hilera (si existe)
-                    objetivo = None
-                    for it in items:
-                        if it[0] == dron.hilera_asignada:
-                            objetivo = it[1]
-                            break
-                    if objetivo is None:
-                        objetivo = 0  # regresar al inicio o esperar
-
-                    if dron.posicion_actual < objetivo:
+                if dron == dron_objetivo:
+                    # este dron es el encargado del proximo riego
+                    if dron.posicion_actual == posicion_objetivo:
+                        # si esta en la posición correcta regar
+                        planta = invernadero.obtener_planta(hilera_objetivo, posicion_objetivo)
+                        if planta:
+                            dron.total_agua += planta.litros_agua
+                            dron.total_fertilizante += planta.gramos_fertilizante
+                            accion = "Regar"
+                            cola_riegos.desencolar()  # eliminar este riego de la cola
+                            riego_realizado = True
+                    elif dron.posicion_actual < posicion_objetivo:
+                        # necesita avanzar
                         dron.posicion_actual += 1
-                        accion = f"Adelante(H{dron.hilera_asignada}P{dron.posicion_actual})"
-                    elif dron.posicion_actual > objetivo:
-                        dron.posicion_actual -= 1
-                        accion = f"Atrás(H{dron.hilera_asignada}P{dron.posicion_actual})"
+                        accion = f"Adelante (H{dron.hilera_asignada}P{dron.posicion_actual})"
                     else:
-                        accion = "Esperar"
+                        # necesita retroceder
+                        dron.posicion_actual -= 1
+                        accion = f"Atrás (H{dron.hilera_asignada}P{dron.posicion_actual})"
+                else:
+                    # este dron no es el encargado del proximo riego
+                    # buscar si tiene algún riego pendiente en su hilera
+                    objetivo_local = self._buscar_proximo_objetivo_dron(dron, cola_riegos)
+                    
+                    if objetivo_local is not None:
+                        if dron.posicion_actual < objetivo_local:
+                            dron.posicion_actual += 1
+                            accion = f"Adelante (H{dron.hilera_asignada}P{dron.posicion_actual})"
+                        elif dron.posicion_actual > objetivo_local:
+                            dron.posicion_actual -= 1
+                            accion = f"Atrás (H{dron.hilera_asignada}P{dron.posicion_actual})"
+                        else:
+                            accion = "Esperar"
+                    else:
+                        # no tiene riegos pendientes, regresar al inicio
+                        if dron.posicion_actual > 0:
+                            dron.posicion_actual -= 1
+                            accion = f"Atrás (H{dron.hilera_asignada}P{dron.posicion_actual})"
+                        else:
+                            accion = "Esperar"
 
-                instrucciones_tiempo[dron.nombre] = accion
+                # crear y agregar instruccion
+                instruccion = InstruccionTiempo(dron.nombre, accion)
+                instrucciones_tiempo.insertar(instruccion)
                 actual_dron = actual_dron.siguiente
 
-            # Asegurar que todos los drones estén presentes en el dict
-            actual_dron = invernadero.drones_asignados.primero
-            while actual_dron is not None:
-                dron = actual_dron.valor
-                if dron.nombre not in instrucciones_tiempo:
-                    instrucciones_tiempo[dron.nombre] = "Esperar"
-                actual_dron = actual_dron.siguiente
+            # agregar las instrucciones de este tiempo
+            instrucciones_globales.insertar(instrucciones_tiempo)
 
-            instrucciones_globales.append(instrucciones_tiempo)
-
-        # Guardar resultados en el plan
+        # guardar resultados en el plan
         plan.tiempo_optimo = tiempo
         plan.agua_total = 0
         plan.fertilizante_total = 0
+        
         actual_dron = invernadero.drones_asignados.primero
         while actual_dron is not None:
             dron = actual_dron.valor
@@ -121,7 +132,37 @@ class Simulador:
             plan.agregar_eficiencia(dron.nombre, dron.total_agua, dron.total_fertilizante)
             actual_dron = actual_dron.siguiente
 
-        for inst in instrucciones_globales:
-            plan.agregar_tiempo_instrucciones(inst)
+        print(f"    Simulación completada: {plan.nombre}")
+        print(f"    - Tiempo óptimo: {plan.tiempo_optimo} segundos")
+        print(f"    - Agua total: {plan.agua_total} litros") 
+        print(f"    - Fertilizante total: {plan.fertilizante_total} gramos")
+        print(f"    - Instrucciones generadas: {instrucciones_globales.tamanio} tiempos")
+
+        # guardar instrucciones en el plan
+        actual_inst = instrucciones_globales.primero
+        while actual_inst is not None:
+            plan.agregar_tiempo_instrucciones(actual_inst.valor)
+            actual_inst = actual_inst.siguiente
 
         return True
+
+    def _buscar_proximo_objetivo_dron(self, dron, cola_riegos):
+        """busca el próximo objetivo para un dron específico en la cola de riegos"""
+        # crear cola temporal para buscar sin modificar la original
+        cola_temp = Cola()
+        objetivo = None
+        
+        # bbuscar en la cola el primer riego para la hilera de este dron
+        encontrado = False
+        while not cola_riegos.esta_vacia():
+            item = cola_riegos.desencolar()
+            cola_temp.encolar(item)
+            if not encontrado and item[0] == dron.hilera_asignada:
+                objetivo = item[1]
+                encontrado = True
+        
+        # rrestaurar cola original
+        while not cola_temp.esta_vacia():
+            cola_riegos.encolar(cola_temp.desencolar())
+            
+        return objetivo

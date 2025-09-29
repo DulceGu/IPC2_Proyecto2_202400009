@@ -1,3 +1,4 @@
+# modelos/plan_riego.py
 from estructuras.lista_simple import ListaSimple
 from .eficiencia_dron import EficienciaDron
 
@@ -9,7 +10,7 @@ class PlanRiego:
         self.agua_total = 0
         self.fertilizante_total = 0
         self.eficiencia_drones = ListaSimple()  # Lista de EficienciaDron
-        self.instrucciones_por_tiempo = ListaSimple()  # Lista de dict temporales (solo durante simulación)
+        self.instrucciones_por_tiempo = ListaSimple()  # Lista de ListaSimple de InstruccionTiempo
 
     def agregar_paso(self, hilera, posicion):
         self.orden_riego.insertar((hilera, posicion))
@@ -18,10 +19,8 @@ class PlanRiego:
         eficiencia = EficienciaDron(nombre_dron, agua, fertilizante)
         self.eficiencia_drones.insertar(eficiencia)
 
-    def agregar_tiempo_instrucciones(self, instrucciones_dict):
-        # instrucciones_dict es un dict de Python SOLO para construcción interna
-        # Pero se almacena como dict temporal (no se usa en lógica de negocio)
-        self.instrucciones_por_tiempo.insertar(instrucciones_dict)
+    def agregar_tiempo_instrucciones(self, instrucciones_lista):
+        self.instrucciones_por_tiempo.insertar(instrucciones_lista)
 
     def __str__(self):
-        return f"Plan: {self.nombre}"
+        return f"Plan: {self.nombre} ({self.tiempo_optimo}s, {self.agua_total}L, {self.fertilizante_total}g)"

@@ -1,41 +1,77 @@
+<!-- templates/simular.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <meta charset="UTF-8">
-    <title>Simular Riego</title>
+    <title>Simular Riego - GuateRiegos 2.0</title>
 </head>
 <body>
+    <div class="header">
+        <h1> Simular Plan de Riego</h1>
+        <p>Ejecuta un plan de riego y genera reportes</p>
+    </div>
+
     <div class="container">
-        <h1>Simular Plan de Riego</h1>
+        <div class="card">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert {{ 'success' if category == 'success' else 'error' }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert {{ 'success' if category == 'success' else 'error' }}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+            <form method="POST" class="simulation-form">
+                <div class="form-group">
+                    <label for="invernadero">Invernadero:</label>
+                    <select name="invernadero" id="invernadero" required class="form-select">
+                        <option value="">-- Seleccione un invernadero --</option>
+                        {% for nombre in invernaderos %}
+                            <option value="{{ nombre }}">{{ nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-        <form method="POST">
-            <label for="invernadero">Invernadero:</label>
-            <select name="invernadero" id="invernadero" required>
-                <option value="">-- Seleccione --</option>
+                <div class="form-group">
+                    <label for="plan">Plan de Riego:</label>
+                    <input type="text" name="plan" id="plan" 
+                           placeholder="Ej: Dia 1, Final, Semana 1" required
+                           class="form-input">
+                    <small>Ingresa el nombre exacto del plan como aparece en el XML</small>
+                </div>
+
+                <button type="submit" class="btn btn-block btn-primary">
+                     Simular y Generar Reporte
+                </button>
+            </form>
+        </div>
+
+        {% if invernaderos %}
+        <div class="card">
+            <h3> Invernaderos Disponibles</h3>
+            <div class="invernaderos-list">
                 {% for nombre in invernaderos %}
-                    <option value="{{ nombre }}">{{ nombre }}</option>
+                <div class="invernadero-item">
+                    <strong>{{ nombre }}</strong>
+                </div>
                 {% endfor %}
-            </select>
+            </div>
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="empty-state">
+                <p> No hay invernaderos cargados. Primero carga un archivo de configuración.</p>
+                <a href="{{ url_for('cargar') }}" class="btn">Cargar Configuración</a>
+            </div>
+        </div>
+        {% endif %}
 
-            <label for="plan">Plan de Riego:</label>
-            <input type="text" name="plan" id="plan" placeholder="Ej: Dia 1, Final, Semana 1" required>
-
-            <button type="submit">Simular y Generar Reporte</button>
-        </form>
-
-        <br>
-        <a href="{{ url_for('index') }}">← Volver al inicio</a>
+        <div class="navigation">
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">← Volver al Inicio</a>
+        </div>
     </div>
 </body>
 </html>

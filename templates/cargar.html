@@ -1,30 +1,55 @@
+<!-- templates/cargar.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <meta charset="UTF-8">
-    <title>Cargar Configuración</title>
+    <title>Cargar Configuración - GuateRiegos 2.0</title>
 </head>
 <body>
-    <div class="container">
-        <h1>Cargar Archivo de Configuración</h1>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert {{ 'success' if category == 'success' else 'error' }}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+    <div class="header">
+        <h1> Cargar Configuración</h1>
+        <p>Sube tu archivo XML con la configuración del sistema</p>
+    </div>
 
-        <form method="POST" enctype="multipart/form-data">
-            <label for="archivo">Selecciona un archivo XML:</label>
-            <input type="file" name="archivo" id="archivo" accept=".xml" required>
-            <button type="submit">Cargar</button>
-        </form>
-        <br>
-        <a href="{{ url_for('index') }}">← Volver al inicio</a>
+    <div class="container">
+        <div class="card">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert {{ 'success' if category == 'success' else 'error' }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" enctype="multipart/form-data" class="upload-form">
+                <div class="form-group">
+                    <label for="archivo">Selecciona un archivo XML:</label>
+                    <input type="file" name="archivo" id="archivo" accept=".xml" required 
+                           class="file-input">
+                    <small>Formato aceptado: .xml</small>
+                </div>
+                <button type="submit" class="btn btn-block"> Cargar Archivo</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3>📋 Formato del Archivo XML</h3>
+            <p>El archivo debe contener la siguiente estructura:</p>
+            <ul>
+                <li><strong>Lista de drones</strong> con ID y nombre</li>
+                <li><strong>Invernaderos</strong> con nombre, hileras y plantas por hilera</li>
+                <li><strong>Plantas</strong> con hilera, posición, agua y fertilizante</li>
+                <li><strong>Asignación de drones</strong> a hileras</li>
+                <li><strong>Planes de riego</strong> con secuencia de plantas a regar</li>
+            </ul>
+        </div>
+
+        <div class="navigation">
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">← Volver al Inicio</a>
+        </div>
     </div>
 </body>
 </html>

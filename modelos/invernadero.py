@@ -1,3 +1,4 @@
+# modelos/invernadero.py
 from estructuras.lista_simple import ListaSimple
 from .planta import Planta
 
@@ -37,4 +38,3 @@ class Invernadero:
 
     def __str__(self):
         return f"Invernadero: {self.nombre} ({self.numero_hileras} hileras, {self.plantas_por_hilera} plantas/hilera)"
-from .plan_riego import PlanRiego

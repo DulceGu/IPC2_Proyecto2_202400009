@@ -3,8 +3,28 @@ import os
 
 class DOTReporte:
     @staticmethod
-    def generar_tda(invernadero, plan, tiempo_t):
-        codigo_dot = 'digraph ColaRiegos {\\n    rankdir=LR;\\n    node [shape=record, height=0.1];\\n'
+    def generar_tda(plan, tiempo_t):
+        """
+        Genera un gráfico de la cola de riegos en un tiempo t.
+        La cola mostrará los pasos que aún no se han ejecutado.
+        """
+        codigo_dot = 'digraph ColaRiegos {\n    rankdir=LR;\n    node [shape=record, height=0.1];\n'
+
+        # avanzar hasta el tiempo t en la lista de instrucciones
+        actual_tiempo = plan.instrucciones_por_tiempo.primero
+        contador_t = 1
+        pendientes = []
+        while actual_tiempo is not None and contador_t <= tiempo_t:
+            # simulamos la eliminación de un riego en cada paso en que haya "Regar"
+            instrucciones = actual_tiempo.valor
+            for accion in instrucciones.values():
+                if accion == "Regar":
+                    if plan.orden_riego.primero is not None:
+                        plan.orden_riego.primero = plan.orden_riego.primero.siguiente
+            actual_tiempo = actual_tiempo.siguiente
+            contador_t += 1
+
+        # ahora recorremos lo que queda en la cola de riegos
         actual = plan.orden_riego.primero
         contador = 1
         while actual is not None:
@@ -13,7 +33,7 @@ class DOTReporte:
             contador += 1
             actual = actual.siguiente
 
-        # Poner flechas
+        # conectar flechas
         for i in range(1, contador):
             if i + 1 < contador:
                 codigo_dot += f'    nodo{i}:f1 -> nodo{i + 1}:f0;\n'
@@ -21,13 +41,12 @@ class DOTReporte:
         codigo_dot += '}'
 
         os.makedirs("reportes/dot", exist_ok=True)
-        ruta_dot = f"reportes/dot/estado_t{tiempo_t}.dot"
+        ruta_dot = f"reportes/dot/cola_t{tiempo_t}.dot"
         with open(ruta_dot, "w", encoding="utf-8") as f:
             f.write(codigo_dot)
 
         os.makedirs("reportes/html", exist_ok=True)
-        ruta_svg = f"reportes/html/estado_t{tiempo_t}.svg"
-        # Ejecuta dot si está disponible en el sistema
+        ruta_svg = f"reportes/html/cola_t{tiempo_t}.svg"
         os.system(f'dot -Tsvg "{ruta_dot}" -o "{ruta_svg}"')
         return ruta_svg
 

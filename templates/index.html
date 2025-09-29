@@ -1,26 +1,83 @@
+<!-- templates/index.html -->
 <!DOCTYPE html>
 <html>
 <head>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <title>GuateRiegos 2.0</title>
+    <title>GuateRiegos 2.0 - Sistema de Riego Automatizado</title>
 </head>
 <body>
-    <h1>Bienvenido a GuateRiegos 2.0</h1>
-    <a href="{{ url_for('cargar') }}">Cargar Configuración</a> |
-    <a href="{{ url_for('simular') }}">Simular Riego</a> |
-    <a href="{{ url_for('ayuda') }}">Ayuda</a>
+    <div class="header">
+        <h1> GuateRiegos USAC</h1>
+        <p>Sistema de Riego y Fertilización Automatizado</p>
+        <p>Dulce Gutierrez 202400009</p>
+    </div>
 
-    <h2>Invernaderos cargados</h2>
-    {% for inv in invernaderos %}
-        <div class="card">
-            <h3>{{ inv.nombre }}</h3>
-            <p>Hileras: {{ inv.total_hileras }}</p>
-            <ul>
-                {% for plan in inv.planes %}
-                    <li>{{ plan.nombre }}</li>
-                {% endfor %}
-            </ul>
+    <div class="container">
+        <div class="menu-card">
+            <h2>Menú Principal</h2>
+            <div class="menu-grid">
+                <a href="{{ url_for('cargar') }}" class="menu-btn">
+                    <span class="text">Cargar Configuración</span>
+                </a>
+                <a href="{{ url_for('simular') }}" class="menu-btn">
+                    <span class="text">Simular Riego</span>
+                </a>
+                <a href="{{ url_for('salida') }}" class="menu-btn">
+                    <span class="text">Generar Salida XML</span>
+                </a>
+                <a href="{{ url_for('ayuda') }}" class="menu-btn">
+                    <span class="text">Ayuda</span>
+                </a>
+            </div>
         </div>
-    {% endfor %}
+
+        <div class="status-card">
+            <h2>Estado del Sistema</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-label">Drones Cargados:</span>
+                    <span class="stat-value">{{ total_drones }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Invernaderos:</span>
+                    <span class="stat-value">{{ total_invernaderos }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Planes de Riego:</span>
+                    <span class="stat-value">{{ total_planes }}</span>
+                </div>
+            </div>
+        </div>
+
+        {% if total_invernaderos > 0 %}
+        <div class="invernaderos-card">
+            <h2>Invernaderos Cargados</h2>
+            {% for inv in invernaderos %}
+            <div class="invernadero-item">
+                <h3>{{ inv.nombre }}</h3>
+                <div class="invernadero-details">
+                    <span>Hileras: {{ inv.numero_hileras }}</span>
+                    <span>Plantas por hilera: {{ inv.plantas_por_hilera }}</span>
+                    <span>Planes: {{ inv.total_planes }}</span>
+                </div>
+                <div class="drones-list">
+                    <strong>Drones asignados:</strong>
+                    {% for dron in inv.drones %}
+                    <span class="dron-tag">{{ dron.nombre }} (H{{ dron.hilera_asignada }})</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>No hay invernaderos cargados. Comienza cargando un archivo de configuración.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="footer">
+        <p>Universidad San Carlos de Guatemala - IPC2 Proyecto 2</p>
+    </div>
 </body>
 </html>
