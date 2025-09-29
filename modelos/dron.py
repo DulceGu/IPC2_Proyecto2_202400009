@@ -1,4 +1,4 @@
-# modelos/dron.py
+
 from estructuras.lista_simple import ListaSimple
 
 class Dron:

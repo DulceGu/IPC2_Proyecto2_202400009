@@ -1,4 +1,4 @@
-# reportes/html_reporte.py
+
 import os
 
 class HTMLReporte:

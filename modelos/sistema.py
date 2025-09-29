@@ -1,4 +1,4 @@
-# modelos/sistema.py
+
 from estructuras.lista_simple import ListaSimple
 
 class SistemaRiego:

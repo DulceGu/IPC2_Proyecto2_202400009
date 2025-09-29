@@ -1,4 +1,4 @@
-# app.py
+
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file
 from modelos.sistema import SistemaRiego
@@ -13,7 +13,7 @@ app.secret_key = "ipc2_proyecto2_2024"
 sistema = SistemaRiego()
 simulador = Simulador(sistema)
 
-# app.py (solo la parte de get_system_stats)
+
 def get_system_stats():
     total_drones = 0
     total_invernaderos = 0

@@ -1,4 +1,4 @@
-# modelos/plan_riego.py
+
 from estructuras.lista_simple import ListaSimple
 from .eficiencia_dron import EficienciaDron
 

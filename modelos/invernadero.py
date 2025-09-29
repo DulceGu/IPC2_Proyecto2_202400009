@@ -1,4 +1,4 @@
-# modelos/invernadero.py
+
 from estructuras.lista_simple import ListaSimple
 from .planta import Planta
 

@@ -1,4 +1,3 @@
-# estructuras/pila.py
 from .nodo import Nodo
 
 class Pila:

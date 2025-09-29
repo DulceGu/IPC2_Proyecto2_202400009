@@ -1,21 +1,17 @@
-# reportes/dot_reporte.py
+
 import os
 
 class DOTReporte:
     @staticmethod
     def generar_tda(plan, tiempo_t):
-        """
-        Genera un gráfico de la cola de riegos en un tiempo t.
-        La cola mostrará los pasos que aún no se han ejecutado.
-        """
+
         codigo_dot = 'digraph ColaRiegos {\n    rankdir=LR;\n    node [shape=record, height=0.1];\n'
 
-        # avanzar hasta el tiempo t en la lista de instrucciones
+
         actual_tiempo = plan.instrucciones_por_tiempo.primero
         contador_t = 1
         pendientes = []
         while actual_tiempo is not None and contador_t <= tiempo_t:
-            # simulamos la eliminación de un riego en cada paso en que haya "Regar"
             instrucciones = actual_tiempo.valor
             for accion in instrucciones.values():
                 if accion == "Regar":
@@ -24,7 +20,6 @@ class DOTReporte:
             actual_tiempo = actual_tiempo.siguiente
             contador_t += 1
 
-        # ahora recorremos lo que queda en la cola de riegos
         actual = plan.orden_riego.primero
         contador = 1
         while actual is not None:
@@ -33,7 +28,6 @@ class DOTReporte:
             contador += 1
             actual = actual.siguiente
 
-        # conectar flechas
         for i in range(1, contador):
             if i + 1 < contador:
                 codigo_dot += f'    nodo{i}:f1 -> nodo{i + 1}:f0;\n'
